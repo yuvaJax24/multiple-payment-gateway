@@ -1,5 +1,6 @@
 import { Button } from "antd";
 import axios from "axios";
+import { PAYMENT_GATEWAY_SERVICE_TYPE } from "../../utils/constants";
 
 type PaymentDetailType = {
   amount: number;
@@ -9,6 +10,7 @@ type PaymentDetailType = {
   email: string;
   surl: string;
   furl: string;
+  payment_gateway_service_type: PAYMENT_GATEWAY_SERVICE_TYPE;
 };
 
 const EasebuzzPaymentGateWay = ({
@@ -24,7 +26,6 @@ const EasebuzzPaymentGateWay = ({
       `${import.meta.env.VITE_API_URL}/payment-gateway/initiate-payment-link`,
       payload
     );
-    console.log("first1", res?.data?.data);
     if (res?.data?.data) {
       window.location.href = `${import.meta.env.VITE_API_EASEBUZZ_DOMAIN}/pay/${
         res?.data?.data

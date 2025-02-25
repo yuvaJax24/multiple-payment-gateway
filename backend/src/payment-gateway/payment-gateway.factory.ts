@@ -1,43 +1,25 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
-import { __PaymentGatewayEntity } from './entities/payment-gateway.entity';
-import { CreatePaymentGatewayDto } from './dto/create-payment-gateway.dto';
 import { PaymentGatewayEaseBuzzRepository } from './repository/payment-gateway-easebuzz.repository';
 import { PAYMENT_GATEWAY_SERVICE_TYPE } from 'utils/constants';
-import { Response } from 'express';
+import { PaymentGatewayRazorpayRepository } from './repository/payment-gateway-razorpay.repository';
 
 @Injectable()
 export class PaymentGatewayFactory {
-  private gateways: __PaymentGatewayEntity[];
   constructor(
     private readonly paymentGatewayEaseBuzzRepository: PaymentGatewayEaseBuzzRepository,
-  ) {
-    this.gateways = [this.paymentGatewayEaseBuzzRepository];
-  }
+    private readonly paymentGatewayRazorpayRepository: PaymentGatewayRazorpayRepository,
+  ) {}
 
-  async getAvailableGateway() {
-    const serviceType: PAYMENT_GATEWAY_SERVICE_TYPE =
-      PAYMENT_GATEWAY_SERVICE_TYPE.EASEBUZZ;
-    switch (serviceType) {
+  async getPaymentGateway(gateway: string) {
+    switch (gateway.toLowerCase() as PAYMENT_GATEWAY_SERVICE_TYPE) {
       case PAYMENT_GATEWAY_SERVICE_TYPE.EASEBUZZ:
         return this.paymentGatewayEaseBuzzRepository;
 
+      case PAYMENT_GATEWAY_SERVICE_TYPE.RAZORPAY:
+        return this.paymentGatewayRazorpayRepository;
+
       default:
-        return this.paymentGatewayEaseBuzzRepository;
+        throw new Error('Unsupported payment gateway');
     }
-  }
-
-  async initializePayment(payload: CreatePaymentGatewayDto) {
-    const gateway = await this.getAvailableGateway();
-    return await gateway.initiatePaymentLink(payload);
-  }
-
-  async paymentSuccess(query: any, res: Response) {
-    const gateway = await this.getAvailableGateway();
-    return await gateway.paymentSuccess(query, res);
-  }
-  async paymentFailed(query: any, res: Response) {
-    const gateway = await this.getAvailableGateway();
-    return await gateway.paymentFailed(query, res);
   }
 }
